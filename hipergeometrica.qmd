@@ -1,0 +1,94 @@
+---
+title: "Distribución Hipergeométrica"
+lang: es
+---
+
+```{=html}
+<style>
+main.content {
+text-align: justify}
+</style>
+```
+
+
+Desarrollar como en la demás distribuciones, incluyendo la función de probabilidad, gráficas considerando el cambio en los parámetros de la distribución. Características de la distribución (media y varianza). Un ejemplo con valores simulados y la verificación del teorema central del límite. Tomar como referencia principal el libro Introducción a la Probabilidad de Luis Rincón, páginas 243-247.
+
+```{r}
+N <- 50; K <- 15; s <- 10
+p <- K/N
+c(media=s*p,varianza=s*p*(1-p)*(N-s)/(N-1))
+```
+```{r}
+x <- max(0,s-(N-K)):min(s,K)
+data.frame(x=x,probabilidad=dhyper(x,m=K,n=N-K,k=s),
+           acumulada=phyper(x,m=K,n=N-K,k=s))
+```
+```{r}
+sum(dhyper(x,m=K,n=N-K,k=s))
+```
+
+```{r}
+ntiguo <- par(mfrow=c(1,3),mar=c(4,4,3,1))
+# Cambio en K con N=50 y s=10.
+x <- 0:10
+plot(x,dhyper(x,5,45,10),type="b",ylim=c(0,0.6),col=1,
+     xlab="x",ylab="P(X=x)",main="N=50, s=10; varia K")
+for (i in 2:3) {
+  K <- c(5,15,30)[i]
+  lines(x,dhyper(x,K,50-K,10),type="b",col=i)
+}
+legend("topright",paste("K=",c(5,15,30)),col=1:3,lty=1,cex=0.8)
+# Cambio en s con N=50 y K=15.
+x <- 0:15
+plot(x,dhyper(x,15,35,5),type="b",ylim=c(0,0.5),
+     xlab="x",ylab="P(X=x)",main="N=50, K=15; varia s")
+for (i in 2:3) lines(x,dhyper(x,15,35,c(5,10,20)[i]),col=i,type="b")
+legend("topright",paste("s=",c(5,10,20)),col=1:3,lty=1,cex=0.8)
+# Cambio en N con K=15 y s=10.
+x <- 0:10
+plot(x,dhyper(x,15,15,10),type="b",ylim=c(0,0.5),
+     xlab="x",ylab="P(X=x)",main="K=15, s=10; varia N")
+for (i in 2:3) lines(x,dhyper(x,15,c(50,100)[i-1]-15,10),col=i,type="b")
+legend("topright",paste("N=",c(30,50,100)),col=1:3,lty=1,cex=0.8)
+```
+### . Ejemplo simulado: lote de semillas
+```{r}
+set.seed(206)
+N <- 50; K <- 15; s <- 10; B <- 10000
+rasgos <- rhyper(B,m=K,n=N-K,k=s)
+x <- 0:10
+freq <- as.numeric(table(factor(rasgos,levels=x)))/B
+teoria <- dhyper(x,K,N-K,s)
+data.frame(x=x,simulada=freq,teorica=teoria)
+```
+```{r}
+c(media_simulada=mean(rasgos),media_teorica=s*K/N,
+  var_simulada=var(rasgos),var_teorica=s*(K/N)*(1-K/N)*(N-s)/(N-1))
+```
+
+```{r}
+plot(x,teoria,type="h",col="red",lwd=3,ylim=c(0,max(freq,teoria)),
+     main="Semillas con el rasgo",xlab="Cantidad",ylab="Probabilidad")
+points(x,freq,pch=16,col="blue")
+legend("topright",c("Teorica","Simulada"),col=c("red","blue"),lty=c(1,NA),pch=c(NA,16))
+```
+
+###Verificación del TCL
+
+```{r}
+set.seed(207)
+N <- 50; K <- 15; s <- 10
+mu <- s*K/N
+v <- s*(K/N)*(1-K/N)*(N-s)/(N-1)
+ver_tcl(function(n) rhyper(n,m=K,n=N-K,k=s),mu,v)
+```
+
+
+
+
+
+
+
+
+
+
